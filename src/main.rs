@@ -1,9 +1,14 @@
 use std::sync::Arc;
 
-use axum::{extract::{State, Json}, routing::{post, get}, Router, http::StatusCode};
-use jammdb::{Data, Error, Tx, DB};
+use axum::{
+    extract::{Json, State},
+    http::StatusCode,
+    routing::{get, post},
+    Router,
+};
+use jammdb::{Error, DB};
 use serde::Deserialize;
-use url::{Url, ParseError};
+use url::Url;
 
 #[tokio::main]
 async fn main() {
@@ -22,42 +27,50 @@ async fn main() {
 #[derive(Deserialize)]
 struct CreateLink {
     link: Url,
-    preffered_url: Option<String>
+    preffered_url: Option<String>,
 }
 
-async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) ->  (StatusCode, String) {
+async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (StatusCode, String) {
     let url = match link.preffered_url.clone() {
         Some(url) => url,
-        None => String::from("generatenew")
+        None => String::from("generatenew"),
     };
     let original = link.link.to_string();
-    let mut tx = state.tx(true).unwrap();
-    match tx.get_bucket("links") {
-        Ok(bucket) => {bucket.put(url, original.clone()).unwrap();},
-        Err(Error::BucketMissing) => {
-            tx.create_bucket("links").unwrap().put(url, original.clone()).unwrap();
-        },
-        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, String::from("Server Error"))
-    };
+    let tx = state.tx(true).unwrap();
+    match tx.get_or_create_bucket("links") {
+        Ok(bucket) => {
+            if bucket.get(&url).is_some() {
+                if let Some(pu) = &link.preffered_url {
+                    return (StatusCode::CONFLICT, format!("Extension {pu} is already taken"));
+                }
+            }
+            else {
+                bucket.put(url, original.clone()).unwrap();
+            }
+        }
+        Err(e) => return interal_server_error(e)
+    }
     tx.commit().unwrap();
     (StatusCode::CREATED, original.clone())
 }
 
-async fn get_link(State(state): State<Arc<DB>>, link: String) ->  (StatusCode, String) { 
-    let mut tx = state.tx(true).unwrap();
+async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, String) {
+    let tx = state.tx(true).unwrap();
     let value = match tx.get_bucket("links") {
         Ok(bucket) => bucket.get(link).unwrap(),
-        Err(_) => panic!("Unrecoverable")
+        Err(_) => panic!("Unrecoverable"),
     };
     let string = match String::from_utf8(value.kv().value().to_vec()) {
         Ok(x) => x,
-        Err(e) => return interal_server_error(e)
+        Err(e) => return interal_server_error(e),
     };
     tx.commit().unwrap();
     (StatusCode::OK, String::from(string))
 }
 
 fn interal_server_error(thing: impl std::error::Error) -> (StatusCode, String) {
-    (StatusCode::INTERNAL_SERVER_ERROR, format!("Server Error: {}", thing.to_string()))
-
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        format!("Server Error: {}", thing.to_string()),
+    )
 }
