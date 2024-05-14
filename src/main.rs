@@ -6,7 +6,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use jammdb::{Error, DB};
+use jammdb::{DB};
 use serde::Deserialize;
 use url::Url;
 
