@@ -51,13 +51,13 @@ async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (S
                 }
             }
             else {
-                bucket.put(url, original.clone()).unwrap();
+                bucket.put(url.clone(), original.clone()).unwrap();
             }
         }
         Err(e) => return interal_server_error(e)
     }
     tx.commit().unwrap();
-    (StatusCode::CREATED, original.clone())
+    (StatusCode::CREATED, url)
 }
 
 async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, String) {
