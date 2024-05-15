@@ -77,7 +77,7 @@ update msg model =
             ( { model | query = string }, Cmd.none )
 
         UpdateCustom string ->
-            ( { model | custom = Just string }, Cmd.none )
+            ( { model | custom = if String.length string == 0 then Nothing else Just string }, Cmd.none )
 
         SubmitInput ->
             ( { model | shortened = Waiting }, postLink model.query model.custom )
@@ -141,7 +141,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "sh"
     , body =
-        [ div [ class "container mx-auto p-2"]
+        [ div [ class "container mx-auto py-5", class "card", style "border-radius" "15px", style "padding-top" "15px" ]
             [ div [ class "mb-3" ]
                 [ label [ class "form-label" ] [ text "Paste a long url: " ]
                 , Html.input [ class "form-control", onInput UpdateInput, placeholder model.query ] []
@@ -150,10 +150,8 @@ view model =
                 [ label [ class "form-label" ] [ text "Custom link: " ]
                 , Html.input [ class "form-control", onInput UpdateCustom, placeholder "Optional" ] []
                 ]
-            , Html.button [class "btn btn-primary mt-3", onClick SubmitInput ] [ text "Shorten" ]
+            , Html.button [class "btn btn-primary", onClick SubmitInput, style "margin-top" "10px" ] [ text "Shorten" ]
             , viewResult model
-            , model.custom |> Maybe.withDefault "Empty" |> text
-            , text model.query
             ]
         ]
     }
@@ -161,7 +159,7 @@ view model =
 
 viewResult : Model -> Html msg
 viewResult model =
-    p []
+    h1 [class "text-center fs-1"]
         [ text
             (case model.shortened of
                 Start ->
