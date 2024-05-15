@@ -108,7 +108,7 @@ subscriptions _ =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "URL Interceptor"
+    { title = "sh"
     , body =
         [ text "Redirecting"
         , text model.url.path

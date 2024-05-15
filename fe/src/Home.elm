@@ -139,20 +139,18 @@ subscriptions _ =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "URL Interceptor"
+    { title = "sh"
     , body =
-        [ div []
-            [ Html.form [ onSubmit SubmitInput ]
-                [ div []
-                    [ label [] [ text "Paste a long url: " ]
-                    , Html.input [ onInput UpdateInput, placeholder model.query ] []
-                    ]
-                , div []
-                    [ label [] [ text "Custom link: " ]
-                    , Html.input [ onInput UpdateCustom, placeholder "Optional" ] []
-                    ]
-                , Html.button [ onClick SubmitInput ] [ text "Shorten" ]
+        [ div [ class "container mx-auto p-2"]
+            [ div [ class "mb-3" ]
+                [ label [ class "form-label" ] [ text "Paste a long url: " ]
+                , Html.input [ class "form-control", onInput UpdateInput, placeholder model.query ] []
                 ]
+            , div [ class "mb-3"]
+                [ label [ class "form-label" ] [ text "Custom link: " ]
+                , Html.input [ class "form-control", onInput UpdateCustom, placeholder "Optional" ] []
+                ]
+            , Html.button [class "btn btn-primary mt-3", onClick SubmitInput ] [ text "Shorten" ]
             , viewResult model
             , model.custom |> Maybe.withDefault "Empty" |> text
             , text model.query
