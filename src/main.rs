@@ -22,7 +22,7 @@ async fn main() {
         .allow_origin(Any);
     let app = Router::new()
         .route("/create_link", post(create_link))
-        .route("/get_link", get(get_link))
+        .route("/get_link", post(get_link))
         .with_state(database)
         .layer(cors);
     // run our app with hyper, listening globally on port 3000
