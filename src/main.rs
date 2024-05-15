@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{
     extract::{Json, State},
     http::{Method, StatusCode},
-    routing::{post},
+    routing::post,
     Router,
 };
 use jammdb::DB;
@@ -37,9 +37,9 @@ struct CreateLink {
 }
 
 async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (StatusCode, String) {
-    let url = match link.preffered_url.clone() {
-        Some(url) => url,
-        None => String::from("generatenew"),
+    let url = match &link.preffered_url {
+        Some(url) => url.clone(),
+        None => random_word::gen_len(3, random_word::Lang::En).unwrap().to_owned(),
     };
     let original = link.link.to_string();
     let tx = state.tx(true).unwrap();
@@ -52,9 +52,8 @@ async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (S
                         format!("Extension {pu} is already taken"),
                     );
                 }
-            } else {
-                bucket.put(url.clone(), original.clone()).unwrap();
             }
+            bucket.put(url.clone(), original.clone()).unwrap();
         }
         Err(e) => return interal_server_error(e),
     }
@@ -65,7 +64,7 @@ async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (S
 async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, String) {
     let tx = state.tx(true).unwrap();
     let value = match tx.get_bucket("links") {
-        Ok(bucket) => match bucket.get(link) {
+        Ok(bucket) => match bucket.get(&link) {
             Some(x) => x,
             None => return (StatusCode::NOT_FOUND, String::from("No link")),
         },
