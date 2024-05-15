@@ -2,12 +2,13 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Json, State},
-    http::StatusCode,
+    http::{Method, StatusCode},
     routing::{get, post},
     Router,
 };
-use jammdb::{DB};
+use jammdb::DB;
 use serde::Deserialize;
+use tower_http::cors::{Any, CorsLayer};
 use url::Url;
 
 #[tokio::main]
@@ -15,10 +16,14 @@ async fn main() {
     tracing_subscriber::fmt::init();
     // build our application with a single route
     let database = Arc::new(DB::open("database.db").unwrap());
+    let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any);
     let app = Router::new()
         .route("/create_link", post(create_link))
         .route("/get_link", get(get_link))
-        .with_state(database);
+        .with_state(database)
+        .layer(cors);
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();

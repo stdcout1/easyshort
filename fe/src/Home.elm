@@ -5,7 +5,11 @@ import Browser.Navigation as Nav
 import Entries
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Url
+import Html.Events exposing (onInput, onSubmit)
+import Http
+import Json.Encode as Encode
+import Url exposing (Protocol(..))
+import Html.Events exposing (onClick)
 
 
 
@@ -28,16 +32,18 @@ main =
 -- MODEL
 
 
-type alias Item =
-    { name : String
-    }
+type ResultURL
+    = Start
+    | Waiting
+    | Complete String
 
 
 type alias Model =
     { key : Nav.Key
     , url : Url.Url
     , query : String
-    , searched : Maybe (List Item)
+    , custom : Maybe String
+    , shortened : ResultURL
     }
 
 
@@ -45,8 +51,9 @@ init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     ( { key = key
       , url = url
-      , query = ""
-      , searched = Nothing
+      , query = "https://google.com"
+      , shortened = Start
+      , custom = Nothing
       }
     , Cmd.none
     )
@@ -59,23 +66,64 @@ init flags url key =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+    | UpdateInput String
+    | UpdateCustom String
+    | SubmitInput
+    | Recived (Result Http.Error String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        LinkClicked urlRequest ->
-            case urlRequest of
-                Browser.Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+        UpdateInput string ->
+            ( { model | query = string }, Cmd.none )
 
-                Browser.External href ->
-                    ( model, Nav.load href )
+        UpdateCustom string ->
+            ( { model | custom = Just string }, Cmd.none )
 
-        UrlChanged url ->
-            ( { model | url = url }
+        SubmitInput ->
+            ( {model | shortened = Waiting}, postLink model.query model.custom )
+
+        Recived result ->
+            ( { model
+                | shortened =
+                    Complete
+                        (case result of
+                            Err err ->
+                                "Error: " ++ Debug.toString(err)
+
+                            Ok string ->
+                                string
+                        )
+              }
             , Cmd.none
             )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+postLink : String -> Maybe String -> Cmd Msg
+postLink query custom =
+    let
+        item : Encode.Value
+        item =
+            Encode.object
+                (( "link", Encode.string query )
+                    :: (case custom of
+                            Nothing ->
+                                []
+
+                            Just string ->
+                                [ ( "preffered_url", Encode.string string ) ]
+                       )
+                )
+    in
+    Http.post
+        { url = "http://172.245.42.218:3000/create_link"
+        , body = Http.jsonBody (Debug.log "Body:" item)
+        , expect = Http.expectString Recived
+        }
 
 
 
@@ -107,7 +155,20 @@ view model =
                 ]
             ]
         , div []
-            [ viewSearch model
+            [ Html.form [ onSubmit SubmitInput ]
+                [ div []
+                    [ label [] [ text "Paste a long url: " ]
+                    , Html.input [ onInput UpdateInput, placeholder model.query ] []
+                    ]
+                , div []
+                    [ label [] [ text "Custom link: " ]
+                    , Html.input [ onInput UpdateCustom, placeholder "Optional" ] []
+                    ]
+                , Html.button [onClick SubmitInput] [ text "Shorten" ]
+                ]
+            , viewResult model
+            , model.custom |> Maybe.withDefault "Empty" |> text
+            , text model.query
             ]
         ]
     }
@@ -118,11 +179,18 @@ viewLink path =
     li [] [ a [ href path ] [ text path ] ]
 
 
-viewSearch : Model -> Html msg
-viewSearch model =
-    case model.searched of
-        Nothing ->
-            b [] [ text "Empty Search" ]
+viewResult : Model -> Html msg
+viewResult model =
+    p []
+        [ text
+            (case model.shortened of
+                Start ->
+                    "Click submit to get a link!"
 
-        Just something ->
-            text ("Search Result: " ++ Debug.toString something)
+                Waiting ->
+                    "Loading..."
+
+                Complete string ->
+                    string
+            )
+        ]
