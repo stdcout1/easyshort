@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{
     extract::{Json, State},
     http::{Method, StatusCode},
-    routing::{get, post},
+    routing::{post},
     Router,
 };
 use jammdb::DB;
