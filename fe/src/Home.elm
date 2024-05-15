@@ -2,14 +2,12 @@ module Home exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
 import Browser.Navigation as Nav
-import Entries
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onSubmit)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Json.Encode as Encode
 import Url exposing (Protocol(..))
-import Html.Events exposing (onClick)
 
 
 
@@ -82,7 +80,7 @@ update msg model =
             ( { model | custom = Just string }, Cmd.none )
 
         SubmitInput ->
-            ( {model | shortened = Waiting}, postLink model.query model.custom )
+            ( { model | shortened = Waiting }, postLink model.query model.custom )
 
         Recived result ->
             ( { model
@@ -90,7 +88,7 @@ update msg model =
                     Complete
                         (case result of
                             Err err ->
-                                "Error: " ++ Debug.toString(err)
+                                "Error: " ++ Debug.toString err
 
                             Ok string ->
                                 string
@@ -144,17 +142,6 @@ view model =
     { title = "URL Interceptor"
     , body =
         [ div []
-            [ text "The current URL is: "
-            , b [] [ text (Url.toString model.url) ]
-            , ul []
-                [ viewLink "/home"
-                , viewLink "/profile"
-                , viewLink "/reviews/the-century-of-the-self"
-                , viewLink "/reviews/public-opinion"
-                , viewLink "/reviews/shah-of-shahs"
-                ]
-            ]
-        , div []
             [ Html.form [ onSubmit SubmitInput ]
                 [ div []
                     [ label [] [ text "Paste a long url: " ]
@@ -164,7 +151,7 @@ view model =
                     [ label [] [ text "Custom link: " ]
                     , Html.input [ onInput UpdateCustom, placeholder "Optional" ] []
                     ]
-                , Html.button [onClick SubmitInput] [ text "Shorten" ]
+                , Html.button [ onClick SubmitInput ] [ text "Shorten" ]
                 ]
             , viewResult model
             , model.custom |> Maybe.withDefault "Empty" |> text
@@ -172,11 +159,6 @@ view model =
             ]
         ]
     }
-
-
-viewLink : String -> Html msg
-viewLink path =
-    li [] [ a [ href path ] [ text path ] ]
 
 
 viewResult : Model -> Html msg
@@ -191,6 +173,6 @@ viewResult model =
                     "Loading..."
 
                 Complete string ->
-                    string
+                    "sh.nasirk.ca/" ++ string
             )
         ]

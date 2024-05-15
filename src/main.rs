@@ -47,14 +47,16 @@ async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (S
         Ok(bucket) => {
             if bucket.get(&url).is_some() {
                 if let Some(pu) = &link.preffered_url {
-                    return (StatusCode::CONFLICT, format!("Extension {pu} is already taken"));
+                    return (
+                        StatusCode::CONFLICT,
+                        format!("Extension {pu} is already taken"),
+                    );
                 }
-            }
-            else {
+            } else {
                 bucket.put(url.clone(), original.clone()).unwrap();
             }
         }
-        Err(e) => return interal_server_error(e)
+        Err(e) => return interal_server_error(e),
     }
     tx.commit().unwrap();
     (StatusCode::CREATED, url)
@@ -63,7 +65,10 @@ async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (S
 async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, String) {
     let tx = state.tx(true).unwrap();
     let value = match tx.get_bucket("links") {
-        Ok(bucket) => bucket.get(link).unwrap(),
+        Ok(bucket) => match bucket.get(link) {
+            Some(x) => x,
+            None => return (StatusCode::NOT_FOUND, String::from("No link")),
+        },
         Err(_) => panic!("Unrecoverable"),
     };
     let string = match String::from_utf8(value.kv().value().to_vec()) {
