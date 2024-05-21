@@ -65,7 +65,21 @@ type Msg
 
 type Redirection
     = Waiting
+    | Destination String
     | Error Http.Error
+
+
+redirectionString : Redirection -> String
+redirectionString r =
+    case r of
+        Waiting ->
+            "..."
+
+        Destination string ->
+            string
+
+        Error e ->
+            Debug.toString e
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -82,7 +96,7 @@ update msg model =
         Recived res ->
             case res of
                 Ok string ->
-                    ( model, Nav.load string )
+                    ( { model | redirection = Destination string }, Nav.load string )
 
                 Err err ->
                     ( { model | redirection = Error err }, Cmd.none )
@@ -110,7 +124,8 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "sh"
     , body =
-        [ text "Redirecting"
-        , text model.url.path
-        , text (Debug.toString model.redirection)]
+        [ h1 [ style "text-align" "center" ]
+            [ text ("Redirecting: " ++ model.url.path ++ " --> " ++ redirectionString model.redirection)
+            ]
+        ]
     }
