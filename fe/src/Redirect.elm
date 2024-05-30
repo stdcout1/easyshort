@@ -45,7 +45,7 @@ getLink url =
     Http.request
         { method = "POST"
         , headers = []
-        , url = "http://172.245.42.218:3000/get_link"
+        , url = "https://backend.sh.nasirk.ca/get_link"
         , body = Http.stringBody "text/plain" (Debug.log "url: " url)
         , expect = Http.expectString Recived
         , timeout = Just 5000
