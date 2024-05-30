@@ -118,7 +118,7 @@ postLink query custom =
                 )
     in
     Http.post
-        { url = "http://172.245.42.218:3000/create_link"
+        { url = "https://backend.sh.nasirk.ca/create_link"
         , body = Http.jsonBody item
         , expect = Http.expectString Recived
         }
