@@ -77,7 +77,16 @@ update msg model =
             ( { model | query = string }, Cmd.none )
 
         UpdateCustom string ->
-            ( { model | custom = if String.length string == 0 then Nothing else Just string }, Cmd.none )
+            ( { model
+                | custom =
+                    if String.length string == 0 then
+                        Nothing
+
+                    else
+                        Just string
+              }
+            , Cmd.none
+            )
 
         SubmitInput ->
             ( { model | shortened = Waiting }, postLink model.query model.custom )
@@ -141,17 +150,19 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "sh"
     , body =
-        [ div [ class "container", class "card", style "border-radius" "15px", style "padding-top" "15px" ]
-            [ div [ class "mb-3" ]
-                [ label [ class "form-label h2 text-light" ] [ text "Paste a long url: " ]
-                , Html.input [ class "form-control", onInput UpdateInput, placeholder model.query ] []
+        [ div [ class "d-flex align-items-center justify-content-center min-vh-100 mx-5 "]
+            [ div [ class "card p-3 flex-fill border border-dark rounded"]
+                [ div [ class "mb-3" ]
+                    [ label [ class "form-label h2 text-light" ] [ text "Paste a long url: " ]
+                    , Html.input [ class "form-control", onInput UpdateInput, placeholder model.query ] []
+                    ]
+                , div [ class "mb-3" ]
+                    [ label [ class "form-label h2 text-light" ] [ text "Custom link: " ]
+                    , Html.input [ class "form-control", onInput UpdateCustom, placeholder "Optional" ] []
+                    ]
+                , Html.button [ class "btn btn-primary", onClick SubmitInput, style "margin-top" "10px" ] [ text "Shorten" ]
+                , viewResult model
                 ]
-            , div [ class "mb-3"]
-                [ label [ class "form-label h2 text-light" ] [ text "Custom link: " ]
-                , Html.input [ class "form-control", onInput UpdateCustom, placeholder "Optional" ] []
-                ]
-            , Html.button [class "btn btn-primary", onClick SubmitInput, style "margin-top" "10px" ] [ text "Shorten" ]
-            , viewResult model
             ]
         ]
     }
@@ -159,7 +170,7 @@ view model =
 
 viewResult : Model -> Html msg
 viewResult model =
-    h1 [class "text-center h1 py-3 text-light"]
+    h1 [ class "text-center h1 py-3 text-light" ]
         [ text
             (case model.shortened of
                 Start ->
