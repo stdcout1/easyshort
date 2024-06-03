@@ -53,9 +53,9 @@ async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (S
                     );
                 }
             }
-            bucket.put(url.clone(), original.clone()).unwrap();
+            bucket.put(url.clone(), original).unwrap();
         }
-        Err(e) => return interal_server_error(e),
+        Err(e) => return internal_server_error(e),
     }
     tx.commit().unwrap();
     (StatusCode::CREATED, url)
@@ -72,13 +72,13 @@ async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, St
     };
     let string = match String::from_utf8(value.kv().value().to_vec()) {
         Ok(x) => x,
-        Err(e) => return interal_server_error(e),
+        Err(e) => return internal_server_error(e),
     };
     tx.commit().unwrap();
     (StatusCode::OK, String::from(string))
 }
 
-fn interal_server_error(thing: impl std::error::Error) -> (StatusCode, String) {
+fn internal_server_error(thing: impl std::error::Error) -> (StatusCode, String) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
         format!("Server Error: {}", thing.to_string()),
