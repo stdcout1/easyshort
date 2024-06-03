@@ -150,8 +150,8 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "sh"
     , body =
-        [ div [ class "d-flex align-items-center justify-content-center min-vh-100 mx-5 "]
-            [ div [ class "card p-3 flex-fill border border-dark rounded"]
+        [ div [ class "d-flex align-items-center justify-content-center min-vh-100"]
+            [ div [ class "card p-3 border border-dark rounded mx-5 w-50"]
                 [ div [ class "mb-3" ]
                     [ label [ class "form-label h2 text-light" ] [ text "Paste a long url: " ]
                     , Html.input [ class "form-control", onInput UpdateInput, placeholder model.query ] []
