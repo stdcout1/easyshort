@@ -8,6 +8,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Json.Encode as Encode
 import Url exposing (Protocol(..))
+import Url.Parser exposing (query)
 
 
 
@@ -74,7 +75,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateInput string ->
-            ( { model | query = string }, Cmd.none )
+            ( { model
+                | query =
+                    if String.contains "https://" string || String.contains "http://" string then
+                        string
+
+                    else
+                        "https://" ++ string
+              }
+            , Cmd.none
+            )
 
         UpdateCustom string ->
             ( { model
@@ -150,8 +160,8 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "sh"
     , body =
-        [ div [ class "d-flex align-items-center justify-content-center min-vh-100"]
-            [ div [ class "card p-3 border border-dark rounded mx-5 w-50"]
+        [ div [ class "d-flex align-items-center justify-content-center min-vh-100" ]
+            [ div [ class "card p-3 border border-dark rounded mx-5 w-50" ]
                 [ div [ class "mb-3" ]
                     [ label [ class "form-label h2 text-light" ] [ text "Paste a long url: " ]
                     , Html.input [ class "form-control", onInput UpdateInput, placeholder model.query ] []
@@ -170,16 +180,19 @@ view model =
 
 viewResult : Model -> Html msg
 viewResult model =
-    h1 [ class "text-center h1 py-3 text-light" ]
-        [ text
-            (case model.shortened of
-                Start ->
-                    ""
+    let
+        regular display =
+            h1 [ class "text-center h1 py-3 text-light" ] [ text display ]
 
-                Waiting ->
-                    "Loading..."
+        link display =
+            a [ class "text-center h1 py-3 text-light", href display ] [ text ("sh.nasirk.ca/" ++ display) ]
+    in
+    case model.shortened of
+        Start ->
+            regular ""
 
-                Complete string ->
-                    "sh.nasirk.ca/" ++ string
-            )
-        ]
+        Waiting ->
+            regular "waiting"
+
+        Complete string ->
+            link string
