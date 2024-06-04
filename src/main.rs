@@ -8,7 +8,7 @@ use axum::{
 };
 use jammdb::DB;
 use serde::Deserialize;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{cors::{Any, CorsLayer}, services::ServeFile};
 use url::Url;
 
 #[tokio::main]
@@ -21,6 +21,14 @@ async fn main() {
         .allow_headers(Any)
         .allow_origin(Any);
     let app = Router::new()
+        // we need to ensure these exist!
+        .route_service("/", ServeFile::new("./index.html"))
+        .route_service("/elm.js", ServeFile::new("./elm.js"))
+        .route_service("/style.css", ServeFile::new("./style.css"))
+        .route_service("/background.svg", ServeFile::new("./background.svg"))
+        .route_service("/*id", ServeFile::new("./redirect.html"))
+        .route_service("/redirect.js", ServeFile::new("./redirect.js"))
+        // regular routers
         .route("/create_link", post(create_link))
         .route("/get_link", post(get_link))
         .with_state(database)
@@ -77,6 +85,7 @@ async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, St
     tx.commit().unwrap();
     (StatusCode::OK, String::from(string))
 }
+
 
 fn internal_server_error(thing: impl std::error::Error) -> (StatusCode, String) {
     (
