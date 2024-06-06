@@ -51,7 +51,7 @@ jobs:
         run: mv ./fe/redirect.js .
 
       - name: Build the preview
-        run: elm make src/Preview.elm --output ../redirect.js
+        run: elm make src/Preview.elm --output ../preview.js
         working-directory: ./fe
 
       - name: Setup Pages
