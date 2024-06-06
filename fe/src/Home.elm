@@ -160,9 +160,15 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "sh"
     , body =
-        [ div [ class "d-flex align-items-center justify-content-center min-vh-100" ]
+        [ div [ class "d-flex flex-column align-items-center justify-content-center min-vh-100" ]
             [ div [ class "card p-3 border border-dark rounded mx-5 w-50" ]
-                [ div [ class "mb-3" ]
+                [ ul [ class "nav nav-tabs flex-fill nav-fill mb-3" ]
+                    [ li [ class "nav-item" ]
+                        [ a [ class "nav-link active", attribute "aria-current" "page", href "#" ] [ text "Shorten" ] ]
+                    , li [ class "nav-item" ]
+                        [ a [ class "nav-link", href "preview" ] [ text "Preview" ] ]
+                    ]
+                , div [ class "mb-3" ]
                     [ label [ class "form-label h2 text-light" ] [ text "Paste a long url: " ]
                     , Html.input [ class "form-control", onInput UpdateInput, placeholder model.query ] []
                     ]
