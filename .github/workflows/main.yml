@@ -50,6 +50,10 @@ jobs:
       - name: Move redirect.js to root
         run: mv ./fe/redirect.js .
 
+      - name: Build the preview
+        run: elm make src/Preview.elm --output ../redirect.js
+        working-directory: ./fe
+
       - name: Setup Pages
         uses: actions/configure-pages@v3
 
