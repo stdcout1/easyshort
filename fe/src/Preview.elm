@@ -137,7 +137,7 @@ view model =
             [ div [ class "card p-3 border border-dark rounded mx-5 w-50" ]
                 [ ul [ class "nav nav-tabs flex-fill nav-fill mb-3" ]
                     [ li [ class "nav-item" ]
-                        [ a [ class "nav-link", attribute "aria-current" "page", href "#" ] [ text "Shorten" ] ]
+                        [ a [ class "nav-link", attribute "aria-current" "page", href "/", target "_self" ] [ text "Shorten" ] ]
                     , li [ class "nav-item" ]
                         [ a [ class "nav-link active", href "preview" ] [ text "Preview" ] ]
                     ]

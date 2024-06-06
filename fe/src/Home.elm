@@ -166,7 +166,7 @@ view model =
                     [ li [ class "nav-item" ]
                         [ a [ class "nav-link active", attribute "aria-current" "page", href "#" ] [ text "Shorten" ] ]
                     , li [ class "nav-item" ]
-                        [ a [ class "nav-link", href "preview" ] [ text "Preview" ] ]
+                        [ a [ class "nav-link", href "preview", target "_self"] [ text "Preview" ] ]
                     ]
                 , div [ class "mb-3" ]
                     [ label [ class "form-label h2 text-light" ] [ text "Paste a long url: " ]
