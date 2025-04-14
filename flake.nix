@@ -11,12 +11,12 @@
           pkgs = nixpkgs.legacyPackages.${system};
         in
         {
-          packages.default = pkgs.rustPlatform.buildRustPackage rec {
-            pname = "adthand";
+          packages.default = pkgs.rustPlatform.buildRustPackage {
+            pname = "easyshort_backend";
             version = "1";
             src = ./.;
             useFetchCargoVendor = true;
-            cargoHash = ""; 
+            cargoHash = "sha256-F0gSBgOft7c2OlkINtDU1/LdfmGjMjYnLb7XlBDYGx8=";
           };
 
         }
