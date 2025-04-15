@@ -63,12 +63,12 @@ async fn create_link(State(state): State<Arc<DB>>, link: Json<CreateLink>) -> (S
 
 async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, String) {
     let tx = state.tx(true).unwrap();
-    let value = match tx.get_bucket("links") {
+    let value = match tx.get_or_create_bucket("links") {
         Ok(bucket) => match bucket.get(&link) {
             Some(x) => x,
             None => return (StatusCode::NOT_FOUND, String::from("No link")),
         },
-        Err(e) => panic!("Unrecoverable: {}", e.to_string()),
+        Err(e) => return internal_server_error(e),
     };
     let string = match String::from_utf8(value.kv().value().to_vec()) {
         Ok(x) => x,
