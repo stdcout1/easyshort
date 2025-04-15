@@ -68,7 +68,7 @@ async fn get_link(State(state): State<Arc<DB>>, link: String) -> (StatusCode, St
             Some(x) => x,
             None => return (StatusCode::NOT_FOUND, String::from("No link")),
         },
-        Err(_) => panic!("Unrecoverable"),
+        Err(e) => panic!("Unrecoverable: {}", e.to_string()),
     };
     let string = match String::from_utf8(value.kv().value().to_vec()) {
         Ok(x) => x,
