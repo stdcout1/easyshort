@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
         with:
-          name: stdcout1/server     <-- clone https://github.com/org1/repo1
+          repository: stdcout1/server     <-- clone https://github.com/org1/repo1
       
       - uses: nixbuild/nix-quick-install-action@v30
 
