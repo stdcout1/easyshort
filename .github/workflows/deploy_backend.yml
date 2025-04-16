@@ -50,5 +50,6 @@ jobs:
       - name: Deploy with deploy-rs
         run: |
           nix flake show
+          ls
           nix run github:serokell/deploy-rs -- .#${PROFILE}
 
