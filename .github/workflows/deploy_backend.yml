@@ -1,6 +1,7 @@
 name: deploy to my server
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
